@@ -52,6 +52,8 @@ GLFW bundles a number of dependencies in the `deps/` directory.
    managing custom system cursors
  - Added `GLFWimage` struct for passing 32-bit RGBA images
  - Added native monitor handle access to native API
+ - Added `glfwGetKeyName` for retrieving the name of a physical key in the
+   current keyboard layout
  - Added `glfwSetDropCallback` and `GLFWdropfun` for receiving dropped files
  - Added `glfwPostEmptyEvent` for allowing secondary threads to cause
    `glfwWaitEvents` to return

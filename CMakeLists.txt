@@ -400,14 +400,16 @@ if (_GLFW_COCOA AND _GLFW_NSGL)
     find_library(IOKIT_FRAMEWORK IOKit)
     find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
     find_library(CORE_VIDEO_FRAMEWORK CoreVideo)
+    find_library(CARBON_FRAMEWORK Carbon)
     list(APPEND glfw_LIBRARIES "${COCOA_FRAMEWORK}"
                                "${OPENGL_gl_LIBRARY}"
                                "${IOKIT_FRAMEWORK}"
                                "${CORE_FOUNDATION_FRAMEWORK}"
-                               "${CORE_VIDEO_FRAMEWORK}")
+                               "${CORE_VIDEO_FRAMEWORK}"
+                               "${CARBON_FRAMEWORK}")
 
     set(GLFW_PKG_DEPS "")
-    set(GLFW_PKG_LIBS "-framework Cocoa -framework OpenGL -framework IOKit -framework CoreFoundation -framework CoreVideo")
+    set(GLFW_PKG_LIBS "-framework Cocoa -framework OpenGL -framework IOKit -framework CoreFoundation -framework CoreVideo -framework Carbon")
 endif()
 
 #--------------------------------------------------------------------

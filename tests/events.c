@@ -360,9 +360,10 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 {
     Slot* slot = glfwGetWindowUserPointer(window);
 
-    printf("%08x to %i at %0.3f: Key 0x%04x Scancode 0x%04x (%s) (with%s) was %s\n",
+    printf("%08x to %i at %0.3f: Key 0x%04x Scancode 0x%04x (%s) (%s) (with%s) was %s\n",
            counter++, slot->number, glfwGetTime(), key, scancode,
            get_key_name(key),
+           glfwGetKeyName(key, scancode),
            get_mods_name(mods),
            get_action_name(action));
 

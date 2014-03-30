@@ -86,13 +86,13 @@ static int translateState(int state)
 
 // Translates an X Window key to internal coding
 //
-static int translateKey(int keycode)
+static int translateKey(int scancode)
 {
-    // Use the pre-filled LUT (see updateKeyCodeLUT() in x11_init.c)
-    if (keycode < 0 || keycode > 255)
+    // Use the pre-filled LUT (see createKeyTables() in x11_init.c)
+    if (scancode < 0 || scancode > 255)
         return GLFW_KEY_UNKNOWN;
 
-    return _glfw.x11.keyCodeLUT[keycode];
+    return _glfw.x11.publicKeys[scancode];
 }
 
 // Translates an X Window event to Unicode
@@ -1641,6 +1641,19 @@ void _glfwPlatformPostEmptyEvent(void)
 
     XSendEvent(_glfw.x11.display, window->x11.handle, False, 0, &event);
     XFlush(_glfw.x11.display);
+}
+
+const char* _glfwPlatformGetKeyName(int key, int scancode)
+{
+    XkbDescPtr desc = XkbGetKeyboard(_glfw.x11.display,
+                                      XkbAllComponentsMask,
+                                      XkbUseCoreKbd);
+
+    free(_glfw.x11.keyName);
+    _glfw.x11.keyName = strdup(desc->names->keys[scancode].name);
+
+    XkbFreeKeyboard(desc, 0, True);
+    return _glfw.x11.keyName;
 }
 
 void _glfwPlatformSetCursorPos(_GLFWwindow* window, double x, double y)

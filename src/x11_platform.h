@@ -111,9 +111,10 @@ typedef struct _GLFWlibraryX11
     int             errorCode;
 
     char*           clipboardString;
+    char*           keyName;
 
-    // LUT for mapping X11 key codes to GLFW key codes
-    int             keyCodeLUT[256];
+    short int       nativeKeys[512];
+    short int       publicKeys[512];
 
     // Window manager atoms
     Atom            WM_PROTOCOLS;

@@ -28,6 +28,9 @@
 
 #include <string.h>
 
+// Needed for TIS* functions
+#include <Carbon/Carbon.h>
+
 // Needed for _NSGetProgname
 #include <crt_externs.h>
 
@@ -282,143 +285,10 @@ static int translateFlags(NSUInteger flags)
 //
 static int translateKey(unsigned int key)
 {
-    // Keyboard symbol translation table
-    static const unsigned int table[128] =
-    {
-        /* 00 */ GLFW_KEY_A,
-        /* 01 */ GLFW_KEY_S,
-        /* 02 */ GLFW_KEY_D,
-        /* 03 */ GLFW_KEY_F,
-        /* 04 */ GLFW_KEY_H,
-        /* 05 */ GLFW_KEY_G,
-        /* 06 */ GLFW_KEY_Z,
-        /* 07 */ GLFW_KEY_X,
-        /* 08 */ GLFW_KEY_C,
-        /* 09 */ GLFW_KEY_V,
-        /* 0a */ GLFW_KEY_WORLD_1,
-        /* 0b */ GLFW_KEY_B,
-        /* 0c */ GLFW_KEY_Q,
-        /* 0d */ GLFW_KEY_W,
-        /* 0e */ GLFW_KEY_E,
-        /* 0f */ GLFW_KEY_R,
-        /* 10 */ GLFW_KEY_Y,
-        /* 11 */ GLFW_KEY_T,
-        /* 12 */ GLFW_KEY_1,
-        /* 13 */ GLFW_KEY_2,
-        /* 14 */ GLFW_KEY_3,
-        /* 15 */ GLFW_KEY_4,
-        /* 16 */ GLFW_KEY_6,
-        /* 17 */ GLFW_KEY_5,
-        /* 18 */ GLFW_KEY_EQUAL,
-        /* 19 */ GLFW_KEY_9,
-        /* 1a */ GLFW_KEY_7,
-        /* 1b */ GLFW_KEY_MINUS,
-        /* 1c */ GLFW_KEY_8,
-        /* 1d */ GLFW_KEY_0,
-        /* 1e */ GLFW_KEY_RIGHT_BRACKET,
-        /* 1f */ GLFW_KEY_O,
-        /* 20 */ GLFW_KEY_U,
-        /* 21 */ GLFW_KEY_LEFT_BRACKET,
-        /* 22 */ GLFW_KEY_I,
-        /* 23 */ GLFW_KEY_P,
-        /* 24 */ GLFW_KEY_ENTER,
-        /* 25 */ GLFW_KEY_L,
-        /* 26 */ GLFW_KEY_J,
-        /* 27 */ GLFW_KEY_APOSTROPHE,
-        /* 28 */ GLFW_KEY_K,
-        /* 29 */ GLFW_KEY_SEMICOLON,
-        /* 2a */ GLFW_KEY_BACKSLASH,
-        /* 2b */ GLFW_KEY_COMMA,
-        /* 2c */ GLFW_KEY_SLASH,
-        /* 2d */ GLFW_KEY_N,
-        /* 2e */ GLFW_KEY_M,
-        /* 2f */ GLFW_KEY_PERIOD,
-        /* 30 */ GLFW_KEY_TAB,
-        /* 31 */ GLFW_KEY_SPACE,
-        /* 32 */ GLFW_KEY_GRAVE_ACCENT,
-        /* 33 */ GLFW_KEY_BACKSPACE,
-        /* 34 */ GLFW_KEY_UNKNOWN,
-        /* 35 */ GLFW_KEY_ESCAPE,
-        /* 36 */ GLFW_KEY_RIGHT_SUPER,
-        /* 37 */ GLFW_KEY_LEFT_SUPER,
-        /* 38 */ GLFW_KEY_LEFT_SHIFT,
-        /* 39 */ GLFW_KEY_CAPS_LOCK,
-        /* 3a */ GLFW_KEY_LEFT_ALT,
-        /* 3b */ GLFW_KEY_LEFT_CONTROL,
-        /* 3c */ GLFW_KEY_RIGHT_SHIFT,
-        /* 3d */ GLFW_KEY_RIGHT_ALT,
-        /* 3e */ GLFW_KEY_RIGHT_CONTROL,
-        /* 3f */ GLFW_KEY_UNKNOWN, /* Function */
-        /* 40 */ GLFW_KEY_F17,
-        /* 41 */ GLFW_KEY_KP_DECIMAL,
-        /* 42 */ GLFW_KEY_UNKNOWN,
-        /* 43 */ GLFW_KEY_KP_MULTIPLY,
-        /* 44 */ GLFW_KEY_UNKNOWN,
-        /* 45 */ GLFW_KEY_KP_ADD,
-        /* 46 */ GLFW_KEY_UNKNOWN,
-        /* 47 */ GLFW_KEY_NUM_LOCK, /* Really KeypadClear... */
-        /* 48 */ GLFW_KEY_UNKNOWN, /* VolumeUp */
-        /* 49 */ GLFW_KEY_UNKNOWN, /* VolumeDown */
-        /* 4a */ GLFW_KEY_UNKNOWN, /* Mute */
-        /* 4b */ GLFW_KEY_KP_DIVIDE,
-        /* 4c */ GLFW_KEY_KP_ENTER,
-        /* 4d */ GLFW_KEY_UNKNOWN,
-        /* 4e */ GLFW_KEY_KP_SUBTRACT,
-        /* 4f */ GLFW_KEY_F18,
-        /* 50 */ GLFW_KEY_F19,
-        /* 51 */ GLFW_KEY_KP_EQUAL,
-        /* 52 */ GLFW_KEY_KP_0,
-        /* 53 */ GLFW_KEY_KP_1,
-        /* 54 */ GLFW_KEY_KP_2,
-        /* 55 */ GLFW_KEY_KP_3,
-        /* 56 */ GLFW_KEY_KP_4,
-        /* 57 */ GLFW_KEY_KP_5,
-        /* 58 */ GLFW_KEY_KP_6,
-        /* 59 */ GLFW_KEY_KP_7,
-        /* 5a */ GLFW_KEY_F20,
-        /* 5b */ GLFW_KEY_KP_8,
-        /* 5c */ GLFW_KEY_KP_9,
-        /* 5d */ GLFW_KEY_UNKNOWN,
-        /* 5e */ GLFW_KEY_UNKNOWN,
-        /* 5f */ GLFW_KEY_UNKNOWN,
-        /* 60 */ GLFW_KEY_F5,
-        /* 61 */ GLFW_KEY_F6,
-        /* 62 */ GLFW_KEY_F7,
-        /* 63 */ GLFW_KEY_F3,
-        /* 64 */ GLFW_KEY_F8,
-        /* 65 */ GLFW_KEY_F9,
-        /* 66 */ GLFW_KEY_UNKNOWN,
-        /* 67 */ GLFW_KEY_F11,
-        /* 68 */ GLFW_KEY_UNKNOWN,
-        /* 69 */ GLFW_KEY_F13,
-        /* 6a */ GLFW_KEY_F16,
-        /* 6b */ GLFW_KEY_F14,
-        /* 6c */ GLFW_KEY_UNKNOWN,
-        /* 6d */ GLFW_KEY_F10,
-        /* 6e */ GLFW_KEY_UNKNOWN,
-        /* 6f */ GLFW_KEY_F12,
-        /* 70 */ GLFW_KEY_UNKNOWN,
-        /* 71 */ GLFW_KEY_F15,
-        /* 72 */ GLFW_KEY_INSERT, /* Really Help... */
-        /* 73 */ GLFW_KEY_HOME,
-        /* 74 */ GLFW_KEY_PAGE_UP,
-        /* 75 */ GLFW_KEY_DELETE,
-        /* 76 */ GLFW_KEY_F4,
-        /* 77 */ GLFW_KEY_END,
-        /* 78 */ GLFW_KEY_F2,
-        /* 79 */ GLFW_KEY_PAGE_DOWN,
-        /* 7a */ GLFW_KEY_F1,
-        /* 7b */ GLFW_KEY_LEFT,
-        /* 7c */ GLFW_KEY_RIGHT,
-        /* 7d */ GLFW_KEY_DOWN,
-        /* 7e */ GLFW_KEY_UP,
-        /* 7f */ GLFW_KEY_UNKNOWN,
-    };
-
     if (key >= 128)
         return GLFW_KEY_UNKNOWN;
 
-    return table[key];
+    return _glfw.ns.publicKeys[key];
 }
 
 
@@ -624,7 +494,13 @@ static int translateKey(unsigned int key)
     const int plain = !(mods & GLFW_MOD_SUPER);
 
     for (i = 0;  i < length;  i++)
-        _glfwInputChar(window, [characters characterAtIndex:i], mods, plain);
+    {
+        const unichar codepoint = [characters characterAtIndex:i];
+        if ((codepoint & 0xff00) == 0xf700)
+            continue;
+
+        _glfwInputChar(window, codepoint, mods, plain);
+    }
 }
 
 - (void)flagsChanged:(NSEvent *)event
@@ -1211,6 +1087,112 @@ void _glfwPlatformPostEmptyEvent(void)
                                            data1:0
                                            data2:0];
     [NSApp postEvent:event atStart:YES];
+}
+
+const char* _glfwPlatformGetKeyName(int key, int scancode)
+{
+    if (key != GLFW_KEY_UNKNOWN)
+        scancode = _glfw.ns.nativeKeys[key];
+
+    switch (_glfw.ns.publicKeys[scancode])
+    {
+        case GLFW_KEY_BACKSPACE:     return "Backspace";
+        case GLFW_KEY_CAPS_LOCK:     return "Caps Lock";
+        case GLFW_KEY_DELETE:        return "Delete";
+        case GLFW_KEY_DOWN:          return "Down";
+        case GLFW_KEY_END:           return "End";
+        case GLFW_KEY_ENTER:         return "Enter";
+        case GLFW_KEY_ESCAPE:        return "Escape";
+        case GLFW_KEY_MENU:          return "Menu";
+        case GLFW_KEY_F1:            return "F1";
+        case GLFW_KEY_F2:            return "F2";
+        case GLFW_KEY_F3:            return "F3";
+        case GLFW_KEY_F4:            return "F4";
+        case GLFW_KEY_F5:            return "F5";
+        case GLFW_KEY_F6:            return "F6";
+        case GLFW_KEY_F7:            return "F7";
+        case GLFW_KEY_F8:            return "F8";
+        case GLFW_KEY_F9:            return "F9";
+        case GLFW_KEY_F10:           return "F10";
+        case GLFW_KEY_F11:           return "F11";
+        case GLFW_KEY_F12:           return "F12";
+        case GLFW_KEY_F13:           return "F13";
+        case GLFW_KEY_F14:           return "F14";
+        case GLFW_KEY_F15:           return "F15";
+        case GLFW_KEY_F16:           return "F16";
+        case GLFW_KEY_F17:           return "F17";
+        case GLFW_KEY_F18:           return "F18";
+        case GLFW_KEY_F19:           return "F19";
+        case GLFW_KEY_F20:           return "F20";
+        case GLFW_KEY_HOME:          return "Home";
+        case GLFW_KEY_INSERT:        return "Insert";
+        case GLFW_KEY_KP_ENTER:      return "KP Enter";
+        case GLFW_KEY_LEFT:          return "Left";
+        case GLFW_KEY_LEFT_ALT:      return "Left Alt";
+        case GLFW_KEY_LEFT_CONTROL:  return "Left Ctrl";
+        case GLFW_KEY_LEFT_SHIFT:    return "Left Shift";
+        case GLFW_KEY_LEFT_SUPER:    return "Left Cmd";
+        case GLFW_KEY_NUM_LOCK:      return "Num Lock";
+        case GLFW_KEY_PAGE_DOWN:     return "Page Down";
+        case GLFW_KEY_PAGE_UP:       return "Page Up";
+        case GLFW_KEY_RIGHT:         return "Right";
+        case GLFW_KEY_RIGHT_ALT:     return "Right Alt";
+        case GLFW_KEY_RIGHT_CONTROL: return "Right Ctrl";
+        case GLFW_KEY_RIGHT_SHIFT:   return "Right Shift";
+        case GLFW_KEY_RIGHT_SUPER:   return "Right Cmd";
+        case GLFW_KEY_SPACE:         return "Space";
+        case GLFW_KEY_TAB:           return "Tab";
+        case GLFW_KEY_UP:            return "Up";
+    }
+
+    CFDataRef uchr = (CFDataRef)
+        TISGetInputSourceProperty(TISCopyCurrentKeyboardInputSource(),
+                                  kTISPropertyUnicodeKeyLayoutData);
+
+    const UCKeyboardLayout* layout =
+      (const UCKeyboardLayout*) CFDataGetBytePtr(uchr);
+    if (!layout)
+    {
+        _glfwInputError(GLFW_PLATFORM_ERROR, NULL);
+        return NULL;
+    }
+
+    UInt32 deadKeyState = 0;
+    const UniCharCount maxStringLength = 255;
+    UniCharCount actualStringLength = 0;
+    UniChar unicodeString[maxStringLength];
+
+    OSStatus status = UCKeyTranslate(layout,
+                                     scancode, kUCKeyActionDown, 0,
+                                     LMGetKbdType(), 0,
+                                     &deadKeyState,
+                                     maxStringLength,
+                                     &actualStringLength,
+                                     unicodeString);
+    if (actualStringLength == 0 && deadKeyState)
+    {
+        status = UCKeyTranslate(layout,
+                                kVK_Space, kUCKeyActionDown, 0,
+                                LMGetKbdType(), 0,
+                                &deadKeyState,
+                                maxStringLength,
+                                &actualStringLength,
+                                unicodeString);
+    }
+
+    if (actualStringLength == 0 || status != noErr)
+    {
+        _glfwInputError(GLFW_PLATFORM_ERROR, NULL);
+        return NULL;
+    }
+
+    NSString* string =
+        [NSString stringWithCharacters:unicodeString
+                                length:(NSUInteger)actualStringLength];
+
+    free(_glfw.ns.keyName);
+    _glfw.ns.keyName = strdup([[string uppercaseString] UTF8String]);
+    return _glfw.ns.keyName;
 }
 
 void _glfwPlatformSetCursorPos(_GLFWwindow* window, double x, double y)
