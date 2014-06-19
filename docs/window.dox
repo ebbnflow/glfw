@@ -8,8 +8,16 @@ The primary purpose of GLFW is to provide a simple interface to window
 management and OpenGL and OpenGL ES context creation.  GLFW supports multiple
 windows, which can be either a normal desktop window or a full screen window.
 
+This guide introduces the window related functions of GLFW.  There are also
+guides for the other areas of the GLFW API.
 
-@section window_object Window handles
+ - @ref intro
+ - @ref context
+ - @ref monitor
+ - @ref input
+
+
+@section window_object Window objects
 
 The @ref GLFWwindow object encapsulates both a window and a context.  They are
 created with @ref glfwCreateWindow and destroyed with @ref glfwDestroyWindow (or
@@ -17,30 +25,34 @@ created with @ref glfwCreateWindow and destroyed with @ref glfwDestroyWindow (or
 linked, the object pointer is used as both a context and window handle.
 
 
-@section window_creation Window creation
+@subsection window_creation Window creation
 
-The window and its context are created with @ref glfwCreateWindow, which
-returns a handle to the created window object.  For example, this creates a 640
-by 480 windowed mode window:
+The window and its OpenGL or OpenGL ES context are created with @ref
+glfwCreateWindow, which returns a handle to the created window object.  For
+example, this creates a 640 by 480 windowed mode window:
 
 @code
 GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
+@endcode
+
+If window creation fails, `NULL` will be returned, so it is necessary to check
+the return value.
+
+@code
 if (!window)
 {
     // Handle window creation failure
 }
 @endcode
 
-If window creation fails, `NULL` will be returned, so you need to check the
-return value.  If creation failed, an error will have been reported to the error
-callback.
-
-This handle is then passed to all window related functions, and is provided to
-you along with input events, so you know which window received the input.
+The window handle is passed to all window related functions and is provided to
+along with all input events, so event handlers can tell which window received
+the event.
 
 To create a full screen window, you need to specify which monitor the window
-should use.  In most cases, the user's primary monitor is a good choice.  For
-more information about monitors, see the @ref monitor.
+should use.  In most cases, the user's primary monitor is a good choice.  You
+can get this with @ref glfwGetPrimaryMonitor.  For more information about
+monitors, see the @ref monitor.
 
 @code
 GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", glfwGetPrimaryMonitor(), NULL);
@@ -54,28 +66,25 @@ For more control over how the window and its context are created, see @ref
 window_hints below.
 
 
-@section window_destruction Window destruction
+@subsection window_destruction Window destruction
 
-When you are done with the window, destroy it with the @ref glfwDestroyWindow
-function.
+When a window is no longer needed, destroy it with @ref glfwDestroyWindow.
 
 @code
 glfwDestroyWindow(window);
 @endcode
 
-Once this function is called, no more events will be delivered for that window
-and its handle becomes invalid.
+Window destruction always succeeds.  Before the actual destruction, all
+callbacks are removed so no further events will be delivered for the window.
+
+When a full screen window is destroyed, the original video mode of its monitor
+is restored, but the gamma ramp is left untouched.
+
+All windows remaining at the time @ref glfwTerminate is called are destroyed as
+well.
 
 
-@section window_userptr Window user pointer
-
-Each window has a user pointer that can be set with @ref
-glfwSetWindowUserPointer and fetched with @ref glfwGetWindowUserPointer.  This
-can be used for any purpose you need and will not be modified by GLFW throughout
-the life-time of the window.
-
-
-@section window_hints Window creation hints
+@subsection window_hints Window creation hints
 
 There are a number of hints that can be set before the creation of a window and
 context.  Some affect the window itself, others affect the framebuffer or
@@ -87,7 +96,7 @@ Note that hints need to be set *before* the creation of the window and context
 you wish to have the specified attributes.
 
 
-@subsection window_hints_hard Hard and soft constraints
+@subsubsection window_hints_hard Hard and soft constraints
 
 Some window hints are hard constraints.  These must match the available
 capabilities *exactly* for window and context creation to succeed.  Hints
@@ -107,7 +116,7 @@ context, but are ignored when requesting an OpenGL ES context:
 - `GLFW_OPENGL_PROFILE`
 
 
-@subsection window_hints_wnd Window related hints
+@subsubsection window_hints_wnd Window related hints
 
 The `GLFW_RESIZABLE` hint specifies whether the (windowed mode) window will be
 resizable *by the user*.  The window will still be resizable using the @ref
@@ -135,7 +144,7 @@ primarily for debugging purposes and cannot be used to implement proper full
 screen windows.  This hint is ignored for full screen windows.
 
 
-@subsection window_hints_fb Framebuffer related hints
+@subsubsection window_hints_fb Framebuffer related hints
 
 The `GLFW_RED_BITS`, `GLFW_GREEN_BITS`, `GLFW_BLUE_BITS`, `GLFW_ALPHA_BITS`,
 `GLFW_DEPTH_BITS` and `GLFW_STENCIL_BITS` hints specify the desired bit
@@ -175,7 +184,7 @@ windows.  If set to zero, the highest available refresh rate will be used.  This
 hint is ignored for windowed mode windows.
 
 
-@subsection window_hints_ctx Context related hints
+@subsubsection window_hints_ctx Context related hints
 
 The `GLFW_CLIENT_API` hint specifies which client API to create the context
 for.  Possible values are `GLFW_OPENGL_API` and `GLFW_OPENGL_ES_API`.  This is
@@ -240,40 +249,55 @@ not be flushed on release.
 extension.
 
 
-@subsection window_hints_values Supported and default values
+@subsubsection window_hints_values Supported and default values
 
-| Name                            | Default value               | Supported values        |
-| ------------------------------- | --------------------------- | ----------------------- |
-| `GLFW_RESIZABLE`                | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_VISIBLE`                  | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_DECORATED`                | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_FOCUSED`                  | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_AUTO_ICONIFY`             | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_FLOATING`                 | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_RED_BITS`                 | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_GREEN_BITS`               | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_BLUE_BITS`                | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_ALPHA_BITS`               | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_DEPTH_BITS`               | 24                          | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_STENCIL_BITS`             | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_ACCUM_RED_BITS`           | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_ACCUM_GREEN_BITS`         | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_ACCUM_BLUE_BITS`          | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_ACCUM_ALPHA_BITS`         | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_AUX_BUFFERS`              | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_SAMPLES`                  | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_REFRESH_RATE`             | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE` |
-| `GLFW_STEREO`                   | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_SRGB_CAPABLE`             | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_DOUBLEBUFFER`             | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_CLIENT_API`               | `GLFW_OPENGL_API`           | `GLFW_OPENGL_API` or `GLFW_OPENGL_ES_API` |
-| `GLFW_CONTEXT_VERSION_MAJOR`    | 1                           | Any valid major version number of the chosen client API |
-| `GLFW_CONTEXT_VERSION_MINOR`    | 0                           | Any valid minor version number of the chosen client API |
-| `GLFW_CONTEXT_ROBUSTNESS`       | `GLFW_NO_ROBUSTNESS`        | `GLFW_NO_ROBUSTNESS`, `GLFW_NO_RESET_NOTIFICATION` or `GLFW_LOSE_CONTEXT_ON_RESET` |
-| `GLFW_CONTEXT_RELEASE_BEHAVIOR` | `GLFW_ANY_RELEASE_BEHAVIOR` | `GLFW_ANY_RELEASE_BEHAVIOR`, `GLFW_RELEASE_BEHAVIOR_FLUSH` or `GLFW_RELEASE_BEHAVIOR_NONE` |
-| `GLFW_OPENGL_FORWARD_COMPAT`    | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_OPENGL_DEBUG_CONTEXT`     | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE` |
-| `GLFW_OPENGL_PROFILE`           | `GLFW_OPENGL_ANY_PROFILE`   | `GLFW_OPENGL_ANY_PROFILE`, `GLFW_OPENGL_COMPAT_PROFILE` or `GLFW_OPENGL_CORE_PROFILE` |
+Window hint                     | Default value               | Supported values
+------------------------------- | --------------------------- | ----------------
+`GLFW_RESIZABLE`                | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE`
+`GLFW_VISIBLE`                  | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE`
+`GLFW_DECORATED`                | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE`
+`GLFW_FOCUSED`                  | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE`
+`GLFW_AUTO_ICONIFY`             | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE`
+`GLFW_FLOATING`                 | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE`
+`GLFW_RED_BITS`                 | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_GREEN_BITS`               | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_BLUE_BITS`                | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_ALPHA_BITS`               | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_DEPTH_BITS`               | 24                          | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_STENCIL_BITS`             | 8                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_ACCUM_RED_BITS`           | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_ACCUM_GREEN_BITS`         | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_ACCUM_BLUE_BITS`          | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_ACCUM_ALPHA_BITS`         | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_AUX_BUFFERS`              | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_SAMPLES`                  | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_REFRESH_RATE`             | 0                           | 0 to `INT_MAX` or `GLFW_DONT_CARE`
+`GLFW_STEREO`                   | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE`
+`GLFW_SRGB_CAPABLE`             | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE`
+`GLFW_DOUBLEBUFFER`             | `GL_TRUE`                   | `GL_TRUE` or `GL_FALSE`
+`GLFW_CLIENT_API`               | `GLFW_OPENGL_API`           | `GLFW_OPENGL_API` or `GLFW_OPENGL_ES_API`
+`GLFW_CONTEXT_VERSION_MAJOR`    | 1                           | Any valid major version number of the chosen client API
+`GLFW_CONTEXT_VERSION_MINOR`    | 0                           | Any valid minor version number of the chosen client API
+`GLFW_CONTEXT_ROBUSTNESS`       | `GLFW_NO_ROBUSTNESS`        | `GLFW_NO_ROBUSTNESS`, `GLFW_NO_RESET_NOTIFICATION` or `GLFW_LOSE_CONTEXT_ON_RESET`
+`GLFW_CONTEXT_RELEASE_BEHAVIOR` | `GLFW_ANY_RELEASE_BEHAVIOR` | `GLFW_ANY_RELEASE_BEHAVIOR`, `GLFW_RELEASE_BEHAVIOR_FLUSH` or `GLFW_RELEASE_BEHAVIOR_NONE`
+`GLFW_OPENGL_FORWARD_COMPAT`    | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE`
+`GLFW_OPENGL_DEBUG_CONTEXT`     | `GL_FALSE`                  | `GL_TRUE` or `GL_FALSE`
+`GLFW_OPENGL_PROFILE`           | `GLFW_OPENGL_ANY_PROFILE`   | `GLFW_OPENGL_ANY_PROFILE`, `GLFW_OPENGL_COMPAT_PROFILE` or `GLFW_OPENGL_CORE_PROFILE`
+
+
+@section window_events Window event processing
+
+See @ref input_event in the @ref input.
+
+
+@section window_userptr Window user pointer
+
+Each window has a user pointer that can be set with @ref
+glfwSetWindowUserPointer and fetched with @ref glfwGetWindowUserPointer.  This
+can be used for any purpose you need and will not be modified by GLFW throughout
+the life-time of the window.
+
+The initial value of the pointer is `NULL`.
 
 
 @section window_close Window close flag
@@ -297,16 +321,16 @@ while (!glfwWindowShouldClose(window))
 }
 @endcode
 
-If you wish to be notified when the user attempts to close a window, you can set
-the close callback with @ref glfwSetWindowCloseCallback.  This callback is
-called directly *after* the close flag has been set.
+If you wish to be notified when the user attempts to close a window, set a close
+callback with @ref glfwSetWindowCloseCallback.
 
 @code
 glfwSetWindowCloseCallback(window, window_close_callback);
 @endcode
 
-The callback function can be used for example to filter close requests and clear
-the close flag again unless certain conditions are met.
+The callback function is called directly *after* the close flag has been set.
+It can be used for example to filter close requests and clear the close flag
+again unless certain conditions are met.
 
 @code
 void window_close_callback(GLFWwindow* window)
@@ -330,13 +354,14 @@ void glfwSetWindowSize(window, 640, 480);
 @endcode
 
 If you wish to be notified when a window is resized, whether by the user or
-the system, you can set the size callback with @ref glfwSetWindowSizeCallback.
+the system, set a size callback with @ref glfwSetWindowSizeCallback.
 
 @code
 glfwSetWindowSizeCallback(window, window_size_callback);
 @endcode
 
-The callback function receives the new size of the client area of the window.
+The callback function receives the new size of the client area of the window
+when it is resized.
 
 @code
 void window_size_callback(GLFWwindow* window, int width, int height)
@@ -354,7 +379,21 @@ glfwGetWindowSize(window, &width, &height);
 
 @note Do not pass the window size to `glViewport` or other pixel-based OpenGL
 calls.  The window size is in screen coordinates, not pixels.  Use the
-framebuffer size, which is in pixels, for pixel-based calls.
+[framebuffer size](@ref window_fbsize), which is in pixels, for pixel-based
+calls.
+
+The above functions work with the size of the client area, but decorated windows
+typically have title bars and window frames around this rectangle.  You can
+retrieve the extents of these with @ref glfwGetWindowFrameSize.
+
+@code
+int left, top, right, bottom;
+glfwGetWindowFrameSize(window, &left, &top, &right, &bottom);
+@endcode
+
+The returned values are the distances, in screen coordinates, from the edges of
+the client area to the corresponding edges of the full window.  As they are
+distances and not coordinates, they are always zero or positive.
 
 
 @section window_fbsize Window framebuffer size
@@ -367,15 +406,15 @@ a second set of functions to retrieve the size in pixels of the framebuffer of
 a window.
 
 If you wish to be notified when the framebuffer of a window is resized, whether
-by the user or the system, you can set the size callback with @ref
+by the user or the system, set a size callback with @ref
 glfwSetFramebufferSizeCallback.
 
 @code
 glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 @endcode
 
-The callback function receives the new size of the client area of the window,
-which can for example be used to update the OpenGL viewport.
+The callback function receives the new size of the framebuffer when it is
+resized, which can for example be used to update the OpenGL viewport.
 
 @code
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -409,15 +448,15 @@ may put limitations on placement.
 glfwSetWindowPos(window, 100, 100);
 @endcode
 
-If you wish to be notified when a window is moved, whether by the user or
-the system, you can set the position callback with @ref glfwSetWindowPosCallback.
+If you wish to be notified when a window is moved, whether by the user, system
+or your own code, set a position callback with @ref glfwSetWindowPosCallback.
 
 @code
 glfwSetWindowPosCallback(window, window_pos_callback);
 @endcode
 
-The callback function receives the new position of the upper-left corner of its
-client area.
+The callback function receives the new position of the upper-left corner of the 
+client area when the window is moved.
 
 @code
 void window_pos_callback(GLFWwindow* window, int xpos, int ypos)
@@ -437,20 +476,176 @@ glfwGetWindowPos(window, &xpos, &ypos);
 @section window_title Window title
 
 All GLFW windows have a title, although undecorated or full screen windows may
-not display it or only display it in a task bar or similar interface.  To change
-the title of a window, use @ref glfwSetWindowTitle.
+not display it or only display it in a task bar or similar interface.  You can
+set a UTF-8 encoded window title with @ref glfwSetWindowTitle.
 
 @code
 glfwSetWindowTitle(window, "My Window");
 @endcode
 
-The window title is a regular C string using the UTF-8 encoding.  This means
-for example that, as long as your source file is encoded as UTF-8, you can use
-any Unicode characters.
+The specified string is copied before the function returns, so there is no need
+to keep it around.
+
+As long as your source file is encoded as UTF-8, you can use any Unicode
+characters directly in the source.
 
 @code
-glfwSetWindowTitle(window, "さよなら絶望先生");
+glfwSetWindowTitle(window, "ヒカルの碁");
 @endcode
+
+
+@section window_monitor Window monitor
+
+Full screen windows are associated with a specific monitor.  You can retrieve
+the handle for this monitor with @ref glfwGetWindowMonitor.
+
+@code
+GLFWmonitor* monitor = glfwGetWindowMonitor(window);
+@endcode
+
+This monitor handle is one of those returned by @ref glfwGetMonitors.
+
+
+@section window_iconify Window iconification
+
+Windows can be iconified (i.e. minimized) with @ref glfwIconifyWindow.
+
+@code
+glfwIconifyWindow(window);
+@endcode
+
+When a full screen window is iconified, the original video mode of its monitor
+is restored until the user or application restores the window.
+
+Iconified windows can be restored with @ref glfwRestoreWindow.
+
+@code
+glfwRestoreWindow(window);
+@endcode
+
+When a full screen window is restored, the desired video mode is restored to its
+monitor as well.
+
+If you wish to be notified when a window is iconified or restored, whether by
+the user, system or your own code, set a iconify callback with @ref
+glfwSetWindowIconifyCallback.
+
+@code
+glfwSetWindowIconifyCallback(window, window_iconify_callback);
+@endcode
+
+The callback function receives changes in the iconification state of the window.
+
+@code
+void window_iconify_callback(GLFWwindow* window, int iconified)
+{
+    if (iconified)
+    {
+        // The window was iconified
+    }
+    else
+    {
+        // The window was restored
+    }
+}
+@endcode
+
+You can also retrieve the current iconification state with @ref
+glfwGetWindowAttrib.
+
+@code
+int iconified = glfwGetWindowAttrib(window, GLFW_ICONIFIED);
+@endcode
+
+
+@section window_hide Window visibility
+
+Windowed mode windows can be hidden with @ref glfwHideWindow.
+
+@code
+glfwHideWindow(window);
+@endcode
+
+This makes the window completely invisible to the user, including removing it
+from the task bar, dock or window list.  Full screen windows cannot be hidden
+and calling @ref glfwHideWindow on a full screen window does nothing.
+
+Hidden windows can be shown with @ref glfwShowWindow.
+
+@code
+glfwShowWindow(window);
+@endcode
+
+Windowed mode windows can be created initially hidden with the `GLFW_VISIBLE`
+[window hint](@ref window_hints_wnd).  Windows created hidden are completely
+invisible to the user until shown.  This can be useful if you need to set up
+your window further before showing it, for example moving it to a specific
+location.
+
+You can also retrieve the current visibility state with @ref glfwGetWindowAttrib.
+
+@code
+int visible = glfwGetWindowAttrib(window, GLFW_VISIBLE);
+@endcode
+
+
+@section window_focus Window focus
+
+If you wish to be notified when a window gains or loses focus, whether by
+the user, system or your own code, set a focus callback with @ref
+glfwSetWindowFocusCallback.
+
+@code
+glfwSetWindowFocusCallback(window, window_focus_callback);
+@endcode
+
+The callback function receives changes in the focus state of the window.
+
+@code
+void window_focus_callback(GLFWwindow* window, int focused)
+{
+    if (focused)
+    {
+        // The window gained focus
+    }
+    else
+    {
+        // The window lost focus
+    }
+}
+@endcode
+
+You can also retrieve the current focus state with @ref glfwGetWindowAttrib.
+
+@code
+int focused = glfwGetWindowAttrib(window, GLFW_FOCUSED);
+@endcode
+
+
+@section window_refresh Window refresh
+
+If you wish to be notified when the contents of a window is damaged and needs
+to be refreshed, set a window refresh callback with @ref
+glfwSetWindowRefreshCallback.
+
+@code
+glfwSetWindowRefreshCallback(m_handle, window_refresh_callback);
+@endcode
+
+The callback function is called when the contents of the window needs to be
+refreshed.
+
+@code
+void window_refresh_callback(GLFWwindow* window)
+{
+    draw_editor_ui(window);
+    glfwSwapBuffers(window);
+}
+@endcode
+
+@note On compositing window systems such as Aero, Compiz or Aqua, where the
+window contents are saved off-screen, this callback may be called only very
+infrequently or never at all.
 
 
 @section window_attribs Window attributes
@@ -458,7 +653,8 @@ glfwSetWindowTitle(window, "さよなら絶望先生");
 Windows have a number of attributes that can be returned using @ref
 glfwGetWindowAttrib.  Some reflect state that may change during the lifetime of
 the window, while others reflect the corresponding hints and are fixed at the
-time of creation.
+time of creation.  Some are related to the actual window and others to its
+context.
 
 @code
 if (glfwGetWindowAttrib(window, GLFW_FOCUSED))
@@ -468,7 +664,7 @@ if (glfwGetWindowAttrib(window, GLFW_FOCUSED))
 @endcode
 
 
-@subsection window_attribs_window Window attributes
+@subsection window_attribs_window Window related attributes
 
 The `GLFW_FOCUSED` attribute indicates whether the specified window currently
 has input focus.
@@ -494,7 +690,7 @@ floating, also called topmost or always-on-top.  This is controlled by the
 [window hint](@ref window_hints) with the same name. 
 
 
-@subsection window_attribs_context Context attributes
+@subsection window_attribs_context Context related attributes
 
 The `GLFW_CLIENT_API` attribute indicates the client API provided by the
 window's context; either `GLFW_OPENGL_API` or `GLFW_OPENGL_ES_API`.
@@ -522,7 +718,7 @@ used by the context.  This is `GLFW_LOSE_CONTEXT_ON_RESET` or
 `GLFW_NO_ROBUSTNESS` otherwise.
 
 
-@section window_swap Swapping buffers
+@section window_swap Buffer swapping
 
 GLFW windows are by default double buffered.  That means that you have two
 rendering buffers; a front buffer and a back buffer.  The front buffer is
@@ -538,7 +734,8 @@ glfwSwapBuffers(window);
 
 Sometimes it can be useful to select when the buffer swap will occur.  With the
 function @ref glfwSwapInterval it is possible to select the minimum number of
-monitor refreshes the driver should wait before swapping the buffers:
+monitor refreshes the driver wait should from the time @ref glfwSwapBuffers was
+called before swapping the buffers:
 
 @code
 glfwSwapInterval(1);
