@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.1 Linux - www.glfw.org
+// GLFW 3.3 Linux - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2014 Jonas Ådahl <jadahl@gmail.com>
 //
@@ -24,28 +24,45 @@
 //
 //========================================================================
 
-#ifndef _linux_joystick_h_
-#define _linux_joystick_h_
+#ifndef _glfw3_linux_joystick_h_
+#define _glfw3_linux_joystick_h_
 
-#define _GLFW_PLATFORM_LIBRARY_JOYSTICK_STATE \
-    _GLFWjoystickLinux linux_js[GLFW_JOYSTICK_LAST + 1]
+#include <regex.h>
+
+#define _GLFW_PLATFORM_LIBRARY_JOYSTICK_STATE _GLFWjoylistLinux linux_js
 
 
-// Linux-specific per-joystick data
+// Linux-specific joystick data
 //
 typedef struct _GLFWjoystickLinux
 {
-    int             present;
+    GLFWbool        present;
     int             fd;
     float*          axes;
     int             axisCount;
     unsigned char*  buttons;
     int             buttonCount;
     char*           name;
+    char*           path;
 } _GLFWjoystickLinux;
 
+// Linux-specific joystick API data
+//
+typedef struct _GLFWjoylistLinux
+{
+    _GLFWjoystickLinux js[GLFW_JOYSTICK_LAST + 1];
 
-void _glfwInitJoysticks(void);
-void _glfwTerminateJoysticks(void);
+#if defined(__linux__)
+    int             inotify;
+    int             watch;
+    regex_t         regex;
+#endif /*__linux__*/
+} _GLFWjoylistLinux;
 
-#endif // _linux_joystick_h_
+
+GLFWbool _glfwInitJoysticksLinux(void);
+void _glfwTerminateJoysticksLinux(void);
+
+void _glfwPollJoystickEvents(void);
+
+#endif // _glfw3_linux_joystick_h_

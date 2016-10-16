@@ -1,8 +1,7 @@
 //========================================================================
-// GLFW 3.1 Win32 - www.glfw.org
+// GLFW 3.3 OS X - www.glfw.org
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2009-2016 Camilla Berglund <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -25,24 +24,37 @@
 //
 //========================================================================
 
-#ifndef _win32_tls_h_
-#define _win32_tls_h_
+#include "internal.h"
 
-#define _GLFW_PLATFORM_LIBRARY_TLS_STATE _GLFWtlsWin32 win32_tls
+#include <mach/mach_time.h>
 
 
-// Win32-specific global TLS data
+//////////////////////////////////////////////////////////////////////////
+//////                       GLFW internal API                      //////
+//////////////////////////////////////////////////////////////////////////
+
+// Initialise timer
 //
-typedef struct _GLFWtlsWin32
+void _glfwInitTimerNS(void)
 {
-    GLboolean       allocated;
-    DWORD           context;
+    mach_timebase_info_data_t info;
+    mach_timebase_info(&info);
 
-} _GLFWtlsWin32;
+    _glfw.ns_time.frequency = (info.denom * 1e9) / info.numer;
+}
 
 
-int _glfwInitTLS(void);
-void _glfwTerminateTLS(void);
-void _glfwSetCurrentContext(_GLFWwindow* context);
+//////////////////////////////////////////////////////////////////////////
+//////                       GLFW platform API                      //////
+//////////////////////////////////////////////////////////////////////////
 
-#endif // _win32_tls_h_
+uint64_t _glfwPlatformGetTimerValue(void)
+{
+    return mach_absolute_time();
+}
+
+uint64_t _glfwPlatformGetTimerFrequency(void)
+{
+    return _glfw.ns_time.frequency;
+}
+

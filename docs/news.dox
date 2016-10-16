@@ -2,30 +2,142 @@
 
 @page news New features
 
-@tableofcontents
+@section news_33 New features in 3.3
+
+@subsection news_33_maximize Window maximization callback
+
+GLFW now supports window maximization notifications with @ref
+glfwSetWindowMaximizeCallback.
 
 
-@section news_31 New features in version 3.1
+@subsection news_33_keyscancode Platform-specific key scancode query
 
-@subsection news_31_cursor Custom system cursor support
-
-GLFW now supports creating and setting custom system cursors.  They can be
-created with @ref glfwCreateCursor, set with @ref glfwSetCursor and destroyed
-with @ref glfwDestroyCursor.  Custom cursors are only visible in normal cursor
-mode.
+GLFW now supports querying the platform dependent scancode of any key with
+@ref glfwGetKeyScancode.
 
 
-@subsection news_31_drop File drop event support
-
-GLFW now provides a callback for receiving the paths of files dropped onto GLFW
-windows.  The callback is set with @ref glfwSetDropCallback.
+@section news_32 New features in 3.2
 
 
-@subsection news_31_emptyevent Main thread waking support
+@subsection news_32_vulkan Support for Vulkan
+
+GLFW now supports basic integration with Vulkan with @ref glfwVulkanSupported,
+@ref glfwGetRequiredInstanceExtensions, @ref glfwGetInstanceProcAddress, @ref
+glfwGetPhysicalDevicePresentationSupport and @ref glfwCreateWindowSurface.
+Vulkan header inclusion can be selected with
+[GLFW_INCLUDE_VULKAN](@ref build_macros).
+
+
+@subsection news_32_setwindowmonitor Window mode switching
+
+GLFW now supports switching between windowed and full screen modes and updating
+the monitor and desired resolution and refresh rate of full screen windows with
+@ref glfwSetWindowMonitor.
+
+
+@subsection news_32_maximize Window maxmimization support
+
+GLFW now supports window maximization with @ref glfwMaximizeWindow and the
+[GLFW_MAXIMIZED](@ref window_attribs_wnd) window hint and attribute.
+
+
+@subsection news_32_focus Window input focus control
+
+GLFW now supports giving windows input focus with @ref glfwFocusWindow.
+
+
+@subsection news_32_sizelimits Window size limit support
+
+GLFW now supports setting both absolute and relative window size limits with
+@ref glfwSetWindowSizeLimits and @ref glfwSetWindowAspectRatio.
+
+
+@subsection news_32_keyname Localized key names
+
+GLFW now supports querying the localized name of printable keys with @ref
+glfwGetKeyName, either by key token or by scancode.
+
+
+@subsection news_32_waittimeout Wait for events with timeout
+
+GLFW now supports waiting for events for a set amount of time with @ref
+glfwWaitEventsTimeout.
+
+
+@subsection news_32_icon Window icon support
+
+GLFW now supports setting the icon of windows with @ref glfwSetWindowIcon.
+
+
+@subsection news_32_timer Raw timer access
+
+GLFW now supports raw timer values with @ref glfwGetTimerValue and @ref
+glfwGetTimerFrequency.
+
+
+@subsection news_32_joystick Joystick connection callback
+
+GLFW now supports notifying when a joystick has been connected or disconnected
+with @ref glfwSetJoystickCallback.
+
+
+@subsection news_32_noapi Context-less windows
+
+GLFW now supports creating windows without a OpenGL or OpenGL ES context with
+[GLFW_NO_API](@ref window_hints_ctx).
+
+
+@subsection news_32_contextapi Run-time context creation API selection
+
+GLFW now supports selecting the context creation API at run-time with the
+[GLFW_CONTEXT_CREATION_API](@ref window_hints_ctx) window hint value.
+
+
+@subsection news_32_noerror Error-free context creation
+
+GLFW now supports creating OpenGL and OpenGL ES contexts that do not emit errors
+with the [GLFW_CONTEXT_NO_ERROR](@ref window_hints_ctx) window hint, provided
+the machine supports the `GL_KHR_no_error` extension.
+
+
+@subsection news_32_cmake CMake config-file package support
+
+GLFW now supports being used as a
+[config-file package](@ref build_link_cmake_package) from other projects for
+easy linking with the library and its dependencies.
+
+
+@section news_31 New features in 3.1
+
+These are the release highlights.  For a full list of changes see the
+[version history](http://www.glfw.org/changelog.html).
+
+
+@subsection news_31_cursor Custom mouse cursor images
+
+GLFW now supports creating and setting both custom cursor images and standard
+cursor shapes.  They are created with @ref glfwCreateCursor or @ref
+glfwCreateStandardCursor, set with @ref glfwSetCursor and destroyed with @ref
+glfwDestroyCursor.
+
+@see @ref cursor_object
+
+
+@subsection news_31_drop Path drop event
+
+GLFW now provides a callback for receiving the paths of files and directories
+dropped onto GLFW windows.  The callback is set with @ref glfwSetDropCallback.
+
+@see @ref path_drop
+
+
+@subsection news_31_emptyevent Main thread wake-up
 
 GLFW now provides the @ref glfwPostEmptyEvent function for posting an empty
 event from another thread to the main thread event queue, causing @ref
 glfwWaitEvents to return.
+
+@see @ref events
 
 
 @subsection news_31_framesize Window frame size query
@@ -33,13 +145,15 @@ glfwWaitEvents to return.
 GLFW now supports querying the size, on each side, of the frame around the
 client area of a window, with @ref glfwGetWindowFrameSize.
 
+@see [Window size](@ref window_size)
 
-@subsection news_31_autoiconify Multi-monitor installation support
+
+@subsection news_31_autoiconify Simultaneous multi-monitor rendering
 
 GLFW now supports disabling auto-iconification of full screen windows with
 the [GLFW_AUTO_ICONIFY](@ref window_hints_wnd) window hint.  This is intended
 for people building multi-monitor installations, where you need windows to stay
-in full screen despite losing focus.
+in full screen despite losing input focus.
 
 
 @subsection news_31_floating Floating windows
@@ -54,6 +168,12 @@ GLFW now supports preventing a windowed mode window from gaining input focus on
 creation, with the [GLFW_FOCUSED](@ref window_hints_wnd) window hint.
 
 
+@subsection news_31_direct Direct access for window attributes and cursor position
+
+GLFW now queries the window input focus, visibility and iconification attributes
+and the cursor position directly instead of returning cached data.
+
+
 @subsection news_31_charmods Character with modifiers callback
 
 GLFW now provides a callback for character events with modifier key bits.  The
@@ -61,8 +181,24 @@ callback is set with @ref glfwSetCharModsCallback.  Unlike the regular character
 callback, this will report character events that will not result in a character
 being input, for example if the Control key is held down.
 
+@see @ref input_char
 
-@subsection news_31_release Context release behavior support
+
+@subsection news_31_single Single buffered framebuffers
+
+GLFW now supports the creation of single buffered windows, with the
+[GLFW_DOUBLEBUFFER](@ref window_hints_fb) window hint.
+
+
+@subsection news_31_glext Macro for including extension header
+
+GLFW now includes the extension header appropriate for the chosen OpenGL or
+OpenGL ES header when [GLFW_INCLUDE_GLEXT](@ref build_macros) is defined.  GLFW
+does not provide these headers.  They must be provided by your development
+environment or your OpenGL or OpenGL ES SDK.
+
+
+@subsection news_31_release Context release behaviors
 
 GLFW now supports controlling whether the pipeline is flushed when a context is
 made non-current, with the
@@ -70,19 +206,23 @@ made non-current, with the
 machine supports the `GL_KHR_context_flush_control` extension.
 
 
-@subsection news_31_single Single buffering support
+@subsection news_31_wayland (Experimental) Wayland support
 
-GLFW now supports the creation of single buffered windows, with the
-[GLFW_DOUBLEBUFFER](@ref window_hints_fb) window hint.
-
-
-@subsection news_31_egl Stable EGL support
-
-The support for EGL is now stable, successfully running on PandaBoards, Mesa,
-ANGLE, Wayland, AMD EGL and others.
+GLFW now has an _experimental_ Wayland display protocol backend that can be
+selected on Linux with a CMake option.
 
 
-@section news_30 New features in version 3.0
+@subsection news_31_mir (Experimental) Mir support
+
+GLFW now has an _experimental_ Mir display server backend that can be selected
+on Linux with a CMake option.
+
+
+@section news_30 New features in 3.0
+
+These are the release highlights.  For a full list of changes see the
+[version history](http://www.glfw.org/changelog.html).
+
 
 @subsection news_30_cmake CMake build system
 
@@ -140,7 +280,7 @@ glfwSetGamma, which generates a ramp from a gamma value and then sets it.
 GLFW now supports the creation of OpenGL ES contexts, by setting the
 `GLFW_CLIENT_API` window hint to `GLFW_OPENGL_ES_API`, where creation of such
 contexts are supported.  Note that GLFW _does not implement_ OpenGL ES, so your
-driver must provide support in a way usable by GLFW.  Modern nVidia and Intel
+driver must provide support in a way usable by GLFW.  Modern Nvidia and Intel
 drivers support creation of OpenGL ES context using the GLX and WGL APIs, while
 AMD provides an EGL implementation instead.
 
@@ -219,7 +359,7 @@ well as moving a window to a specific position before showing it.
 
 @subsection news_30_undecorated Undecorated windows
 
-Windowed mode windows can now be created without decorations, i.e. things like
+Windowed mode windows can now be created without decorations, e.g. things like
 a frame, a title bar, with the `GLFW_DECORATED` window hint.  This allows for
 the creation of things like splash screens.
 
